@@ -1,0 +1,6 @@
+git init
+git add .
+git commit -m "Site recettes Vauban"
+git branch -M main
+git remote add origin https://github.com/TON_COMPTE/vauban-recettes.git
+git push -u origin main
