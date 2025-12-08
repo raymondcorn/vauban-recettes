@@ -3,9 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>Recettes – Vauban</title>
-  <link rel="stylesheet" href="style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Couleur de la barre (mobile) -->
+  <meta name="theme-color" content="#222222">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Icône iOS (facultatif mais sympa si tu as un logo) -->
+  <!-- <link rel="apple-touch-icon" href="icons/icon-192.png"> -->
+
+  <link rel="stylesheet" href="style.css">
 </head>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .catch(console.error);
+  }
+</script>
+</body>
+</html>
+
 <body>
   <header>
     <h1>Recettes du Vauban</h1>
@@ -48,3 +67,4 @@
   </script>
 </body>
 </html>
+
