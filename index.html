@@ -35,7 +35,12 @@
 
   <script>
     async function loadRecipes() {
-      const res = await fetch('data/recipes.json');
+      const res = await const API_URL = 'https://script.google.com/macros/s/AKfycbzqeo-M2r-v3Cfs5qIlSuMWur7z_DmawkVI1l_gH71bWHzGN0kneAZoqBqfvHra0qYTPA/exec/exec';
+
+const res = await fetch(API_URL + '?type=recipes');
+const data = await res.json();
+const recipes = data.recipes;
+
       const recipes = await res.json();
       const list = document.getElementById('recipe-list');
       const searchInput = document.getElementById('search');
@@ -67,4 +72,5 @@
   </script>
 </body>
 </html>
+
 
