@@ -1,1 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Recette – Vauban</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <header>
+    <a href="index.html">← Retour aux recettes</a>
+    <h1 id="title"></h1>
+  </header>
+
+  <main>
+    <section>
+      <h2>Ingrédients</h2>
+      <ul id="ingredients"></ul>
+    </section>
+    <section>
+      <h2>Procédé</h2>
+      <ol id="instructions"></ol>
+    </section>
+  </main>
+
+  <script>
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+
+    async function loadRecipe() {
+      const id = getParam('id');
+      const res = await fetch('data/recipes.json');
+      const recipes = await res.json();
+      const recipe = recipes.find(r => r.id === id);
+
+      if (!recipe) {
+        document.getElementById('title').textContent = "Recette introuvable";
+        return;
+      }
+
+      document.getElementById('title').textContent = recipe.name;
+
+      const ingList = document.getElementById('ingredients');
+      recipe.ingredients.forEach(i => {
+        const li = document.createElement('li');
+        li.textContent = `${i.quantity} ${i.unit} – ${i.name}`;
+        ingList.appendChild(li);
+      });
+
+      const instList = document.getElementById('instructions');
+      recipe.instructions.forEach(step => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        instList.appendChild(li);
+      });
+    }
+
+    loadRecipe();
+  </script>
+</body>
+</html>
+
 
