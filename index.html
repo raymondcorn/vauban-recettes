@@ -1,6 +1,50 @@
-git init
-git add .
-git commit -m "Site recettes Vauban"
-git branch -M main
-git remote add origin https://github.com/TON_COMPTE/vauban-recettes.git
-git push -u origin main
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Recettes – Vauban</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <header>
+    <h1>Recettes du Vauban</h1>
+    <input id="search" type="text" placeholder="Rechercher une recette...">
+  </header>
+
+  <main id="recipe-list"></main>
+
+  <script>
+    async function loadRecipes() {
+      const res = await fetch('data/recipes.json');
+      const recipes = await res.json();
+      const list = document.getElementById('recipe-list');
+      const searchInput = document.getElementById('search');
+
+      function render(filter = '') {
+        list.innerHTML = '';
+        recipes
+          .filter(r => r.name.toLowerCase().includes(filter.toLowerCase()))
+          .forEach(r => {
+            const card = document.createElement('a');
+            card.className = 'card';
+            card.href = 'recipe.html?id=' + encodeURIComponent(r.id);
+            card.innerHTML = `
+              <h2>${r.name}</h2>
+              <p>${r.category || ''}</p>
+            `;
+            list.appendChild(card);
+          });
+      }
+
+      render();
+
+      searchInput.addEventListener('input', e => {
+        render(e.target.value);
+      });
+    }
+
+    loadRecipes();
+  </script>
+</body>
+</html>
