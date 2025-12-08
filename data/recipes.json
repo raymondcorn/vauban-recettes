@@ -1,1 +1,62 @@
+[
+  {
+    "id": "sorbet-huile-olive",
+    "name": "Sorbet à l’huile d’olive",
+    "category": "Dessert",
+    "ingredients": [
+      { "name": "Eau", "quantity": 400, "unit": "g" },
+      { "name": "Sucre", "quantity": 200, "unit": "g" },
+      { "name": "Jus de citron", "quantity": 50, "unit": "g" },
+      { "name": "Gélatine", "quantity": 8, "unit": "feuilles" },
+      { "name": "Huile d’olive", "quantity": 300, "unit": "g" }
+    ],
+    "instructions": [
+      "Blanchir l’eau et le sucre.",
+      "Ajouter le jus de citron.",
+      "Ramollir la gélatine et l’incorporer hors du feu.",
+      "Mixer avec l’huile d’olive.",
+      "Refroidir puis turbiner."
+    ]
+  },
+  {
+    "id": "sable-breton",
+    "name": "Sablé breton",
+    "category": "Pâtisserie",
+    "ingredients": [
+      { "name": "Beurre doux", "quantity": 150, "unit": "g" },
+      { "name": "Sucre", "quantity": 130, "unit": "g" },
+      { "name": "Jaune d’œuf", "quantity": 60, "unit": "g" },
+      { "name": "Farine T55", "quantity": 130, "unit": "g" },
+      { "name": "Baking powder", "quantity": 9, "unit": "g" },
+      { "name": "Sel", "quantity": 4, "unit": "g" }
+    ],
+    "instructions": [
+      "Blanchir les jaunes et le sucre.",
+      "Ajouter le beurre pommade.",
+      "Ajouter farine, sel et baking powder.",
+      "Étaler entre deux feuilles de papier sulfurisé.",
+      "Cuire 10 minutes à 150°C, retirer les feuilles, recuire 5 minutes."
+    ]
+  },
+  {
+    "id": "huile-herbe",
+    "name": "Tuile à l’huile d’herbe",
+    "category": "Mise en bouche",
+    "ingredients": [
+      { "name": "Huile d’herbe", "quantity": 80, "unit": "g" },
+      { "name": "Blanc d’œuf", "quantity": 120, "unit": "g" },
+      { "name": "Sel", "quantity": 6, "unit": "g" },
+      { "name": "Sucre", "quantity": 2, "unit": "g" },
+      { "name": "Farine T55", "quantity": 50, "unit": "g" },
+      { "name": "Herbes déshydratées", "quantity": 5, "unit": "g" }
+    ],
+    "instructions": [
+      "Mixer l’huile d’herbe avec le blanc d’œuf.",
+      "Ajouter sel, sucre, farine et herbes.",
+      "Laisser reposer 30 minutes.",
+      "Cuire en fine couche pour former des tuiles croustillantes."
+    ]
+  }
+]
+
 
