@@ -27,9 +27,15 @@
 
 <body>
   <header>
-    <h1>Recettes du Vauban</h1>
+  <h1>Recettes du Vauban</h1>
+  <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
     <input id="search" type="text" placeholder="Rechercher une recette...">
-  </header>
+    <a href="inventory.html" style="margin-left:auto; color:#ffd54f; text-decoration:none; font-size:0.9rem;">
+      Voir l’inventaire →
+    </a>
+  </div>
+</header>
+
 
   <main id="recipe-list"></main>
 
@@ -72,6 +78,7 @@ const recipes = data.recipes;
   </script>
 </body>
 </html>
+
 
 
 
