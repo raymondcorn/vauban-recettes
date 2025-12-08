@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventaire – Vauban</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <header>
+    <a href="index.html">← Recettes</a>
+    <h1>Inventaire produits</h1>
+  </header>
+
+  <main>
+    <section>
+      <p id="inv-info">Chargement de l’inventaire…</p>
+      <table id="inv-table" style="width:100%; border-collapse:collapse; display:none;">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Produit</th>
+            <th style="text-align:left;">Fournisseur</th>
+            <th style="text-align:right;">Prix HT</th>
+            <th style="text-align:left;">Unité</th>
+            <th style="text-align:right;">Stock</th>
+            <th style="text-align:right;">Valeur stock</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr>
+            <th colspan="5" style="text-align:right;">TOTAL INVENTAIRE (€)</th>
+            <th id="inv-total" style="text-align:right;"></th>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = 'TON_URL_APPS_SCRIPT/exec'; // <= à remplacer
+
+    async function loadInventory() {
+      const info = document.getElementById('inv-info');
+      const table = document.getElementById('inv-table');
+      const tbody = table.querySelector('tbody');
+      const totalCell = document.getElementById('inv-total');
+
+      try {
+        const res = await fetch(API_URL + '?type=inventory');
+        const data = await res.json();
+
+        if (data.error) {
+          info.textContent = 'Erreur : ' + data.error;
+          return;
+        }
+
+        const products = data.products || [];
+        const total = data.totalInventory || 0;
+
+        if (!products.length) {
+          info.textContent = 'Aucun produit trouvé.';
+          return;
+        }
+
+        info.style.display = 'none';
+        table.style.display = 'table';
+
+        // Remplir le tableau
+        products.forEach(p => {
+          const tr = document.createElement('tr');
+
+          function td(txt, align) {
+            const cell = document.createElement('td');
+            cell.textContent = txt;
+            if (align) cell.style.textAlign = align;
+            return cell;
+          }
+
+          tr.appendChild(td(p.name, 'left'));
+          tr.appendChild(td(p.supplier || '', 'left'));
+          tr.appendChild(td(p.priceHt != null ? p.priceHt.toFixed(2) : '', 'right'));
+          tr.appendChild(td(p.unit || '', 'left'));
+          tr.appendChild(td(p.stock != null ? p.stock : '', 'right'));
+          tr.appendChild(td(p.stockValue != null ? p.stockValue.toFixed(2) : '', 'right'));
+
+          tbody.appendChild(tr);
+        });
+
+        totalCell.textContent = total.toFixed(2);
+
+      } catch (e) {
+        console.error(e);
+        info.textContent = 'Erreur de chargement de l’inventaire.';
+      }
+    }
+
+    loadInventory();
+  </script>
+</body>
+</html>
