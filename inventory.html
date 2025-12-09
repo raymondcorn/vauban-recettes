@@ -193,12 +193,12 @@
         // boutons action
         const btnSave = document.createElement('button');
         btnSave.textContent = 'Enregistrer';
-        btnSave.onclick = () => saveProduct(p.name, p.supplier, priceInput.value, unitInput.value, stockInput.value);
+        btnSave.onclick = () => saveProduct(p.row, p.name, p.supplier, priceInput.value, unitInput.value, stockInput.value);
 
         const btnDel = document.createElement('button');
         btnDel.textContent = 'Supprimer';
         btnDel.style.marginLeft = '4px';
-        btnDel.onclick = () => deleteProduct(p.name, p.supplier);
+        btnDel.onclick = () => deleteProduct(p.row, p.name, p.supplier);
 
         const actions = document.createElement('div');
         actions.appendChild(btnSave);
@@ -230,6 +230,7 @@
 
   const params = new URLSearchParams();
   params.append('action', 'updateProduct');
+     params.append('row', row);
   params.append('name', name);
   params.append('supplier', supplier);
   if (priceHt !== '') params.append('priceHt', priceHt);
@@ -259,6 +260,7 @@
 
   const params = new URLSearchParams();
   params.append('action', 'deleteProduct');
+    params.append('row', row);  
   params.append('name', name);
   params.append('supplier', supplier);
 
