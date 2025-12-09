@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Inventaire – Vauban</title>
-  <link rel="stylesheet" href="style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#222222">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
@@ -15,22 +18,23 @@
   <main>
     <section>
       <p id="inv-info">Chargement de l’inventaire…</p>
+
       <table id="inv-table" style="width:100%; border-collapse:collapse; display:none;">
         <thead>
           <tr>
-            <th style="text-align:left;">Produit</th>
-            <th style="text-align:left;">Fournisseur</th>
-            <th style="text-align:right;">Prix HT</th>
-            <th style="text-align:left;">Unité</th>
-            <th style="text-align:right;">Stock</th>
-            <th style="text-align:right;">Valeur stock</th>
+            <th style="text-align:left; padding:4px;">Produit</th>
+            <th style="text-align:left; padding:4px;">Fournisseur</th>
+            <th style="text-align:right; padding:4px;">Prix HT</th>
+            <th style="text-align:left; padding:4px;">Unité</th>
+            <th style="text-align:right; padding:4px;">Stock</th>
+            <th style="text-align:right; padding:4px;">Valeur stock</th>
           </tr>
         </thead>
         <tbody></tbody>
         <tfoot>
           <tr>
-            <th colspan="5" style="text-align:right;">TOTAL INVENTAIRE (€)</th>
-            <th id="inv-total" style="text-align:right;"></th>
+            <th colspan="5" style="text-align:right; padding:4px;">TOTAL INVENTAIRE (€)</th>
+            <th id="inv-total" style="text-align:right; padding:4px;"></th>
           </tr>
         </tfoot>
       </table>
@@ -38,7 +42,8 @@
   </main>
 
   <script>
-    const API_URL = https://script.google.com/macros/s/AKfycbyW0H0VHUhmCxbOfyM9lK8XgeZCXmMear5ufkfaqCHA7NtxQyWTlku4SHMGYEttQu7T2Q/exec; // <= à remplacer
+    // 🔗 même URL que dans index.html / recipe.html
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzu4wXxbw774dyAuIMI0qIYfekE7rvs9AAvppHuFyy1obfwuCxqof0sbNfR7BNkUWKWxw/exec'; // ← à remplacer
 
     async function loadInventory() {
       const info = document.getElementById('inv-info');
@@ -66,28 +71,37 @@
         info.style.display = 'none';
         table.style.display = 'table';
 
-        // Remplir le tableau
         products.forEach(p => {
           const tr = document.createElement('tr');
 
           function td(txt, align) {
             const cell = document.createElement('td');
             cell.textContent = txt;
+            cell.style.padding = '4px';
             if (align) cell.style.textAlign = align;
             return cell;
           }
 
           tr.appendChild(td(p.name, 'left'));
           tr.appendChild(td(p.supplier || '', 'left'));
-          tr.appendChild(td(p.priceHt != null ? p.priceHt.toFixed(2) : '', 'right'));
+          tr.appendChild(td(
+            p.priceHt != null && !isNaN(p.priceHt) ? p.priceHt.toFixed(2) : '',
+            'right'
+          ));
           tr.appendChild(td(p.unit || '', 'left'));
-          tr.appendChild(td(p.stock != null ? p.stock : '', 'right'));
-          tr.appendChild(td(p.stockValue != null ? p.stockValue.toFixed(2) : '', 'right'));
+          tr.appendChild(td(
+            p.stock != null && p.stock !== '' ? p.stock : '',
+            'right'
+          ));
+          tr.appendChild(td(
+            p.stockValue != null && !isNaN(p.stockValue) ? p.stockValue.toFixed(2) : '',
+            'right'
+          ));
 
           tbody.appendChild(tr);
         });
 
-        totalCell.textContent = total.toFixed(2);
+        totalCell.textContent = total && !isNaN(total) ? total.toFixed(2) : '0.00';
 
       } catch (e) {
         console.error(e);
@@ -96,6 +110,10 @@
     }
 
     loadInventory();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').catch(console.error);
+    }
   </script>
 </body>
 </html>
