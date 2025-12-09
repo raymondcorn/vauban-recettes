@@ -17,6 +17,19 @@
 
   <main>
     <section>
+      <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+        <div>
+          <label for="filter-supplier" style="font-size:0.85rem; display:block;">Fournisseur</label>
+          <select id="filter-supplier">
+            <option value="">Tous les fournisseurs</option>
+          </select>
+        </div>
+        <div>
+          <label for="search-product" style="font-size:0.85rem; display:block;">Rechercher produit</label>
+          <input id="search-product" type="text" placeholder="Nom du produit…">
+        </div>
+      </div>
+
       <p id="inv-info">Chargement de l’inventaire…</p>
 
       <table id="inv-table" style="width:100%; border-collapse:collapse; display:none;">
@@ -58,16 +71,23 @@
 
   <script>
     // 🔗 URL de ton Apps Script
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwoUtzG1-DlkSWNvaoDpR6xqH7azD0UkmKbWNo1BTD2fFAQlrwtGUilEjYrqNPikMbFHg/exec'; // ← remplace par ton URL
-    const TOKEN   = 'RAY2025SECRET';            // ← le même que dans SECRET_TOKEN
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwoUtzG1-DlkSWNvaoDpR6xqH7azD0UkmKbWNo1BTD2fFAQlrwtGUilEjYrqNPikMbFHg/exec'; // ← remplace par ton URL /exec
+    const TOKEN   = 'RAY2025SECRET';            // ← même valeur que SECRET_TOKEN côté script
+
+    let allProducts = []; // toutes les lignes récupérées depuis l’API
 
     async function loadInventory() {
       const info = document.getElementById('inv-info');
       const table = document.getElementById('inv-table');
       const tbody = table.querySelector('tbody');
       const totalCell = document.getElementById('inv-total');
+      const supplierSelect = document.getElementById('filter-supplier');
 
-      info.textContent = 'Chargement de l’inventaire...';
+      info.style.display = 'block';
+      info.textContent = 'Chargement de l’inventaire…';
+      table.style.display = 'none';
+      tbody.innerHTML = '';
+      totalCell.textContent = '';
 
       try {
         const res = await fetch(API_URL + '?type=inventory');
@@ -78,85 +98,130 @@
           return;
         }
 
-        const products = data.products || [];
-        const total = data.totalInventory || 0;
+        allProducts = data.products || [];
 
-        if (!products.length) {
+        if (!allProducts.length) {
           info.textContent = 'Aucun produit trouvé.';
           return;
         }
 
-        info.style.display = 'none';
-        table.style.display = 'table';
-        tbody.innerHTML = '';
+        // remplir la liste des fournisseurs
+        const suppliers = Array.from(
+          new Set(
+            allProducts
+              .map(p => p.supplier || '')
+              .filter(s => s && s.trim() !== '')
+          )
+        ).sort((a, b) => a.localeCompare(b, 'fr'));
 
-        products.forEach(p => {
-          const tr = document.createElement('tr');
-
-          function td(content, align) {
-            const cell = document.createElement('td');
-            if (content instanceof HTMLElement) {
-              cell.appendChild(content);
-            } else {
-              cell.textContent = content;
-            }
-            cell.style.padding = '4px';
-            if (align) cell.style.textAlign = align;
-            return cell;
-          }
-
-          // champs éditables
-          const priceInput = document.createElement('input');
-          priceInput.type = 'number';
-          priceInput.step = '0.01';
-          priceInput.value = p.priceHt != null ? p.priceHt : '';
-          priceInput.style.width = '80px';
-
-          const unitInput = document.createElement('input');
-          unitInput.type = 'text';
-          unitInput.value = p.unit || '';
-          unitInput.style.width = '70px';
-
-          const stockInput = document.createElement('input');
-          stockInput.type = 'number';
-          stockInput.step = '0.01';
-          stockInput.value = p.stock != null ? p.stock : '';
-          stockInput.style.width = '70px';
-
-          // boutons action
-          const btnSave = document.createElement('button');
-          btnSave.textContent = 'Enregistrer';
-          btnSave.onclick = () => saveProduct(p.name, p.supplier, priceInput.value, unitInput.value, stockInput.value);
-
-          const btnDel = document.createElement('button');
-          btnDel.textContent = 'Supprimer';
-          btnDel.style.marginLeft = '4px';
-          btnDel.onclick = () => deleteProduct(p.name, p.supplier);
-
-          const actions = document.createElement('div');
-          actions.appendChild(btnSave);
-          actions.appendChild(btnDel);
-
-          tr.appendChild(td(p.name, 'left'));
-          tr.appendChild(td(p.supplier || '', 'left'));
-          tr.appendChild(td(priceInput, 'right'));
-          tr.appendChild(td(unitInput, 'left'));
-          tr.appendChild(td(stockInput, 'right'));
-          tr.appendChild(td(
-            p.stockValue != null && !isNaN(p.stockValue) ? p.stockValue.toFixed(2) : '',
-            'right'
-          ));
-          tr.appendChild(td(actions, 'center'));
-
-          tbody.appendChild(tr);
+        supplierSelect.innerHTML = '<option value="">Tous les fournisseurs</option>';
+        suppliers.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          supplierSelect.appendChild(opt);
         });
 
-        totalCell.textContent = total && !isNaN(total) ? total.toFixed(2) : '0.00';
+        info.style.display = 'none';
+        table.style.display = 'table';
+
+        // premier rendu sans filtre
+        renderInventory();
 
       } catch (e) {
         console.error(e);
         info.textContent = 'Erreur de chargement de l’inventaire.';
       }
+    }
+
+    function renderInventory() {
+      const table = document.getElementById('inv-table');
+      const tbody = table.querySelector('tbody');
+      const totalCell = document.getElementById('inv-total');
+      const supplierSelect = document.getElementById('filter-supplier');
+      const searchInput = document.getElementById('search-product');
+
+      const supplierFilter = supplierSelect.value.trim().toLowerCase();
+      const searchFilter = searchInput.value.trim().toLowerCase();
+
+      tbody.innerHTML = '';
+
+      const filtered = allProducts.filter(p => {
+        const supplier = (p.supplier || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+
+        if (supplierFilter && supplier !== supplierFilter) return false;
+        if (searchFilter && !name.includes(searchFilter)) return false;
+        return true;
+      });
+
+      let total = 0;
+
+      filtered.forEach(p => {
+        const tr = document.createElement('tr');
+
+        function td(content, align) {
+          const cell = document.createElement('td');
+          if (content instanceof HTMLElement) {
+            cell.appendChild(content);
+          } else {
+            cell.textContent = content;
+          }
+          cell.style.padding = '4px';
+          if (align) cell.style.textAlign = align;
+          return cell;
+        }
+
+        // champs éditables
+        const priceInput = document.createElement('input');
+        priceInput.type = 'number';
+        priceInput.step = '0.01';
+        priceInput.value = p.priceHt != null ? p.priceHt : '';
+        priceInput.style.width = '80px';
+
+        const unitInput = document.createElement('input');
+        unitInput.type = 'text';
+        unitInput.value = p.unit || '';
+        unitInput.style.width = '70px';
+
+        const stockInput = document.createElement('input');
+        stockInput.type = 'number';
+        stockInput.step = '0.01';
+        stockInput.value = p.stock != null ? p.stock : '';
+        stockInput.style.width = '70px';
+
+        // boutons action
+        const btnSave = document.createElement('button');
+        btnSave.textContent = 'Enregistrer';
+        btnSave.onclick = () => saveProduct(p.name, p.supplier, priceInput.value, unitInput.value, stockInput.value);
+
+        const btnDel = document.createElement('button');
+        btnDel.textContent = 'Supprimer';
+        btnDel.style.marginLeft = '4px';
+        btnDel.onclick = () => deleteProduct(p.name, p.supplier);
+
+        const actions = document.createElement('div');
+        actions.appendChild(btnSave);
+        actions.appendChild(btnDel);
+
+        const stockValue = p.stockValue != null && !isNaN(p.stockValue) ? Number(p.stockValue) : 0;
+        total += stockValue;
+
+        tr.appendChild(td(p.name, 'left'));
+        tr.appendChild(td(p.supplier || '', 'left'));
+        tr.appendChild(td(priceInput, 'right'));
+        tr.appendChild(td(unitInput, 'left'));
+        tr.appendChild(td(stockInput, 'right'));
+        tr.appendChild(td(
+          stockValue ? stockValue.toFixed(2) : '',
+          'right'
+        ));
+        tr.appendChild(td(actions, 'center'));
+
+        tbody.appendChild(tr);
+      });
+
+      totalCell.textContent = total.toFixed(2);
     }
 
     async function saveProduct(name, supplier, priceHt, unit, stock) {
@@ -268,6 +333,8 @@
     }
 
     document.getElementById('btn-add').addEventListener('click', addNewProduct);
+    document.getElementById('filter-supplier').addEventListener('change', renderInventory);
+    document.getElementById('search-product').addEventListener('input', renderInventory);
 
     loadInventory();
 
