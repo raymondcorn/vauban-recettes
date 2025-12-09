@@ -11,74 +11,81 @@
   <!-- Manifest PWA -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- Icône iOS (facultatif mais sympa si tu as un logo) -->
-  <!-- <link rel="apple-touch-icon" href="icons/icon-192.png"> -->
-
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .catch(console.error);
-  }
-</script>
-</body>
-</html>
-
 <body>
   <header>
-  <h1>Recettes du Vauban</h1>
-  <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-    <input id="search" type="text" placeholder="Rechercher une recette...">
-    <a href="inventory.html" style="margin-left:auto; color:#ffd54f; text-decoration:none; font-size:0.9rem;">
-      Voir l’inventaire →
-    </a>
-  </div>
-</header>
-
+    <h1>Recettes du Vauban</h1>
+    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+      <input id="search" type="text" placeholder="Rechercher une recette...">
+      <a href="inventory.html" style="margin-left:auto; color:#ffd54f; text-decoration:none; font-size:0.9rem;">
+        Voir l’inventaire →
+      </a>
+    </div>
+  </header>
 
   <main id="recipe-list"></main>
 
   <script>
+    // 🔗 URL de l’API Apps Script (celle qui finit par /exec)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzu4wXxbw774dyAuIMI0qIYfekE7rvs9AAvppHuFyy1obfwuCxqof0sbNfR7BNkUWKWxw/exec';
+
     async function loadRecipes() {
-      const res = await const API_URL = 'https://script.google.com/macros/s/AKfycbzqeo-M2r-v3Cfs5qIlSuMWur7z_DmawkVI1l_gH71bWHzGN0kneAZoqBqfvHra0qYTPA/exec/exec';
-
-
-const data = await res.json();
-const recipes = data.recipes;
-
-      const recipes = await res.json();
       const list = document.getElementById('recipe-list');
       const searchInput = document.getElementById('search');
 
-      function render(filter = '') {
-        list.innerHTML = '';
-        recipes
-          .filter(r => r.name.toLowerCase().includes(filter.toLowerCase()))
-          .forEach(r => {
-            const card = document.createElement('a');
-            card.className = 'card';
-            card.href = 'recipe.html?id=' + encodeURIComponent(r.id);
-            card.innerHTML = `
-              <h2>${r.name}</h2>
-              <p>${r.category || ''}</p>
-            `;
-            list.appendChild(card);
-          });
+      list.innerHTML = '<p>Chargement des recettes...</p>';
+
+      try {
+        const res = await fetch(API_URL + '?type=recipes');
+        const data = await res.json();
+
+        if (data.error) {
+          list.innerHTML = '<p>Erreur : ' + data.error + '</p>';
+          return;
+        }
+
+        const recipes = data.recipes || [];
+
+        function render(filter = '') {
+          list.innerHTML = '';
+          recipes
+            .filter(r => r.name.toLowerCase().includes(filter.toLowerCase()))
+            .forEach(r => {
+              const card = document.createElement('a');
+              card.className = 'card';
+              card.href = 'recipe.html?id=' + encodeURIComponent(r.id);
+              card.innerHTML = `
+                <h2>${r.name}</h2>
+                <p>${r.category || ''}</p>
+              `;
+              list.appendChild(card);
+            });
+
+          if (!recipes.length) {
+            list.innerHTML = '<p>Aucune recette trouvée.</p>';
+          }
+        }
+
+        render();
+
+        searchInput.addEventListener('input', e => {
+          render(e.target.value);
+        });
+
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = '<p>Erreur de chargement des recettes.</p>';
       }
-
-      render();
-
-      searchInput.addEventListener('input', e => {
-        render(e.target.value);
-      });
     }
 
     loadRecipes();
+
+    // ✅ Enregistrement du service worker (PWA)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').catch(console.error);
+    }
   </script>
 </body>
 </html>
-
-
-
-
