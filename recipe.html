@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Recette – Vauban</title>
-  <link rel="stylesheet" href="style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#222222">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
@@ -24,6 +27,9 @@
   </main>
 
   <script>
+    // 🔗 Même URL que dans index.html
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzu4wXxbw774dyAuIMI0qIYfekE7rvs9AAvppHuFyy1obfwuCxqof0sbNfR7BNkUWKWxw/exec';
+
     function getParam(name) {
       const url = new URL(window.location.href);
       return url.searchParams.get(name);
@@ -31,35 +37,65 @@
 
     async function loadRecipe() {
       const id = getParam('id');
-      const res = await fetch('data/recipes.json');
-      const recipes = await res.json();
-      const recipe = recipes.find(r => r.id === id);
+      const titleEl = document.getElementById('title');
+      const ingList = document.getElementById('ingredients');
+      const instList = document.getElementById('instructions');
 
-      if (!recipe) {
-        document.getElementById('title').textContent = "Recette introuvable";
+      if (!id) {
+        titleEl.textContent = 'Recette introuvable';
         return;
       }
 
-      document.getElementById('title').textContent = recipe.name;
+      try {
+        const res = await fetch(API_URL + '?type=recipes');
+        const data = await res.json();
 
-      const ingList = document.getElementById('ingredients');
-      recipe.ingredients.forEach(i => {
-        const li = document.createElement('li');
-        li.textContent = `${i.quantity} ${i.unit} – ${i.name}`;
-        ingList.appendChild(li);
-      });
+        if (data.error) {
+          titleEl.textContent = 'Erreur : ' + data.error;
+          return;
+        }
 
-      const instList = document.getElementById('instructions');
-      recipe.instructions.forEach(step => {
-        const li = document.createElement('li');
-        li.textContent = step;
-        instList.appendChild(li);
-      });
+        const recipes = data.recipes || [];
+        const recipe = recipes.find(r => r.id === id);
+
+        if (!recipe) {
+          titleEl.textContent = 'Recette introuvable';
+          return;
+        }
+
+        titleEl.textContent = recipe.name;
+
+        // Ingrédients
+        ingList.innerHTML = '';
+        (recipe.ingredients || []).forEach(i => {
+          const li = document.createElement('li');
+          const qty = (i.quantity !== null && i.quantity !== '' && !isNaN(i.quantity))
+            ? i.quantity
+            : '';
+          const unit = i.unit || '';
+          li.textContent = `${qty ? qty + ' ' : ''}${unit} – ${i.name}`;
+          ingList.appendChild(li);
+        });
+
+        // Instructions
+        instList.innerHTML = '';
+        (recipe.instructions || []).forEach(step => {
+          const li = document.createElement('li');
+          li.textContent = step;
+          instList.appendChild(li);
+        });
+
+      } catch (e) {
+        console.error(e);
+        titleEl.textContent = 'Erreur de chargement de la recette';
+      }
     }
 
     loadRecipe();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').catch(console.error);
+    }
   </script>
 </body>
 </html>
-
-
