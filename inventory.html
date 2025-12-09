@@ -224,113 +224,102 @@
       totalCell.textContent = total.toFixed(2);
     }
 
-    async function saveProduct(name, supplier, priceHt, unit, stock) {
-      const msgEl = document.getElementById('inv-msg');
-      msgEl.textContent = 'Enregistrement...';
+   async function saveProduct(name, supplier, priceHt, unit, stock) {
+  const msgEl = document.getElementById('inv-msg');
+  msgEl.textContent = 'Enregistrement...';
 
-      const params = new URLSearchParams();
-      
-      params.append('action', 'updateProduct');
-      params.append('name', name);
-      params.append('supplier', supplier);
-      if (priceHt !== '') params.append('priceHt', priceHt);
-      if (unit !== '')    params.append('unit', unit);
-      if (stock !== '')   params.append('stock', stock);
+  const params = new URLSearchParams();
+  params.append('action', 'updateProduct');
+  params.append('name', name);
+  params.append('supplier', supplier);
+  if (priceHt !== '') params.append('priceHt', priceHt);
+  if (unit !== '')    params.append('unit', unit);
+  if (stock !== '')   params.append('stock', stock);
 
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: params
-        });
-        const data = await res.json();
-        if (data.error) {
-          msgEl.textContent = 'Erreur : ' + data.error;
-        } else {
-          msgEl.textContent = 'Produit mis à jour.';
-          loadInventory();
-        }
-      } catch (e) {
-        console.error(e);
-        msgEl.textContent = 'Erreur lors de la mise à jour.';
-      }
+  try {
+    const res = await fetch(API_URL + '?' + params.toString());
+    const data = await res.json();
+    if (data.error) {
+      msgEl.textContent = 'Erreur : ' + data.error;
+    } else {
+      msgEl.textContent = 'Produit mis à jour.';
+      loadInventory();
     }
+  } catch (e) {
+    console.error(e);
+    msgEl.textContent = 'Erreur lors de la mise à jour.';
+  }
+}
 
     async function deleteProduct(name, supplier) {
-      const msgEl = document.getElementById('inv-msg');
-      if (!confirm('Supprimer ce produit ?')) return;
+  const msgEl = document.getElementById('inv-msg');
+  if (!confirm('Supprimer ce produit ?')) return;
 
-      msgEl.textContent = 'Suppression...';
+  msgEl.textContent = 'Suppression...';
 
-      const params = new URLSearchParams();
-      
-      params.append('action', 'deleteProduct');
-      params.append('name', name);
-      params.append('supplier', supplier);
+  const params = new URLSearchParams();
+  params.append('action', 'deleteProduct');
+  params.append('name', name);
+  params.append('supplier', supplier);
 
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: params
-        });
-        const data = await res.json();
-        if (data.error) {
-          msgEl.textContent = 'Erreur : ' + data.error;
-        } else {
-          msgEl.textContent = 'Produit supprimé.';
-          loadInventory();
-        }
-      } catch (e) {
-        console.error(e);
-        msgEl.textContent = 'Erreur lors de la suppression.';
-      }
+  try {
+    const res = await fetch(API_URL + '?' + params.toString());
+    const data = await res.json();
+    if (data.error) {
+      msgEl.textContent = 'Erreur : ' + data.error;
+    } else {
+      msgEl.textContent = 'Produit supprimé.';
+      loadInventory();
     }
+  } catch (e) {
+    console.error(e);
+    msgEl.textContent = 'Erreur lors de la suppression.';
+  }
+}
 
     async function addNewProduct() {
-      const msgEl = document.getElementById('inv-msg');
-      const nameEl = document.getElementById('new-name');
-      const supplierEl = document.getElementById('new-supplier');
-      const priceEl = document.getElementById('new-price');
-      const unitEl = document.getElementById('new-unit');
-      const stockEl = document.getElementById('new-stock');
+  const msgEl = document.getElementById('inv-msg');
+  const nameEl = document.getElementById('new-name');
+  const supplierEl = document.getElementById('new-supplier');
+  const priceEl = document.getElementById('new-price');
+  const unitEl = document.getElementById('new-unit');
+  const stockEl = document.getElementById('new-stock');
 
-      if (!nameEl.value.trim()) {
-        msgEl.textContent = 'Le nom du produit est obligatoire.';
-        return;
-      }
+  if (!nameEl.value.trim()) {
+    msgEl.textContent = 'Le nom du produit est obligatoire.';
+    return;
+  }
 
-      msgEl.textContent = 'Ajout du produit...';
+  msgEl.textContent = 'Ajout du produit...';
 
-      const params = new URLSearchParams();
-      
-      params.append('action', 'addProduct');
-      params.append('name', nameEl.value.trim());
-      params.append('supplier', supplierEl.value.trim());
-      if (priceEl.value !== '') params.append('priceHt', priceEl.value);
-      if (unitEl.value !== '')  params.append('unit', unitEl.value);
-      if (stockEl.value !== '') params.append('stock', stockEl.value);
+  const params = new URLSearchParams();
+  params.append('action', 'addProduct');
+  params.append('name', nameEl.value.trim());
+  params.append('supplier', supplierEl.value.trim());
+  if (priceEl.value !== '') params.append('priceHt', priceEl.value);
+  if (unitEl.value !== '')  params.append('unit', unitEl.value);
+  if (stockEl.value !== '') params.append('stock', stockEl.value);
 
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: params
-        });
-        const data = await res.json();
-        if (data.error) {
-          msgEl.textContent = 'Erreur : ' + data.error;
-        } else {
-          msgEl.textContent = 'Produit ajouté.';
-          nameEl.value = '';
-          supplierEl.value = '';
-          priceEl.value = '';
-          unitEl.value = '';
-          stockEl.value = '';
-          loadInventory();
-        }
-      } catch (e) {
-        console.error(e);
-        msgEl.textContent = 'Erreur lors de l’ajout.';
-      }
+  try {
+    const res = await fetch(API_URL + '?' + params.toString());
+    const data = await res.json();
+    if (data.error) {
+      msgEl.textContent = 'Erreur : ' + data.error;
+    } else {
+      msgEl.textContent = 'Produit ajouté.';
+      nameEl.value = '';
+      supplierEl.value = '';
+      priceEl.value = '';
+      unitEl.value = '';
+      stockEl.value = '';
+      loadInventory();
     }
+  } catch (e) {
+    console.error(e);
+    msgEl.textContent = 'Erreur lors de l’ajout.';
+  }
+}
+
 
     document.getElementById('btn-add').addEventListener('click', addNewProduct);
     document.getElementById('filter-supplier').addEventListener('change', renderInventory);
