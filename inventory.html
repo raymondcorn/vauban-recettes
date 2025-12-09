@@ -2,89 +2,171 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Inventaire – Vauban</title>
+  <title>Inventaire – Le Vauban</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta name="theme-color" content="#222222">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #111827;
+      color: #f9fafb;
+    }
+    header {
+      padding: 12px 16px;
+      background: #0f172a;
+      border-bottom: 1px solid #1f2937;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    main {
+      padding: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border-bottom: 1px solid #1f2937;
+      padding: 4px 6px;
+    }
+    th {
+      text-align: left;
+      background: #020617;
+    }
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 0.8rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    button {
+      font-size: 0.75rem;
+      padding: 4px 6px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #facc15;
+      color: #111827;
+      font-weight: 600;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #4b5563;
+      color: #e5e7eb;
+    }
+    #inv-msg {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+    }
+    #inv-info {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+    tfoot th {
+      background: #020617;
+      border-top: 1px solid #1f2937;
+    }
+    .add-row {
+      margin-top: 16px;
+      padding-top: 8px;
+      border-top: 1px solid #1f2937;
+    }
+    .add-row input {
+      min-width: 80px;
+    }
+    .add-row-fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    @media (max-width: 600px) {
+      table {
+        font-size: 0.75rem;
+      }
+      th, td {
+        padding: 3px 4px;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
-    <a href="index.html">← Recettes</a>
     <h1>Inventaire produits</h1>
   </header>
 
   <main>
-    <section>
-      <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-        <div>
-          <label for="filter-supplier" style="font-size:0.85rem; display:block;">Fournisseur</label>
-          <select id="filter-supplier">
-            <option value="">Tous les fournisseurs</option>
-          </select>
-        </div>
-        <div>
-          <label for="search-product" style="font-size:0.85rem; display:block;">Rechercher produit</label>
-          <input id="search-product" type="text" placeholder="Nom du produit…">
-        </div>
+    <p id="inv-info">Chargement de l’inventaire…</p>
+
+    <table id="inv-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Fournisseur</th>
+          <th style="text-align:right;">Prix HT</th>
+          <th>Unité</th>
+          <th style="text-align:right;">Stock</th>
+          <th style="text-align:right;">Valeur stock</th>
+          <th style="text-align:center;">Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <th colspan="5" style="text-align:right;">TOTAL INVENTAIRE (€)</th>
+          <th id="inv-total" style="text-align:right;"></th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="add-row">
+      <h2 style="font-size:0.95rem; margin:0 0 6px;">Ajouter un produit</h2>
+      <div class="add-row-fields">
+        <input id="new-name" type="text" placeholder="Produit">
+        <input id="new-supplier" type="text" placeholder="Fournisseur">
+        <input id="new-price" type="number" step="0.01" placeholder="Prix HT">
+        <input id="new-unit" type="text" placeholder="Unité">
+        <input id="new-stock" type="number" step="0.01" placeholder="Stock">
+        <button id="btn-add" class="btn-primary">Ajouter</button>
       </div>
-
-      <p id="inv-info">Chargement de l’inventaire…</p>
-
-      <table id="inv-table" style="width:100%; border-collapse:collapse; display:none;">
-        <thead>
-          <tr>
-            <th style="text-align:left; padding:4px;">Produit</th>
-            <th style="text-align:left; padding:4px;">Fournisseur</th>
-            <th style="text-align:right; padding:4px;">Prix HT</th>
-            <th style="text-align:left; padding:4px;">Unité</th>
-            <th style="text-align:right; padding:4px;">Stock</th>
-            <th style="text-align:right; padding:4px;">Valeur stock</th>
-            <th style="text-align:center; padding:4px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-        <tfoot>
-          <tr>
-            <th colspan="5" style="text-align:right; padding:4px;">TOTAL INVENTAIRE (€)</th>
-            <th id="inv-total" style="text-align:right; padding:4px;"></th>
-            <th></th>
-          </tr>
-        </tfoot>
-      </table>
-    </section>
-
-    <section style="margin-top:2rem;">
-      <h2>Ajouter un produit</h2>
-      <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-        <input id="new-name" placeholder="Produit" />
-        <input id="new-supplier" placeholder="Fournisseur" />
-        <input id="new-price" type="number" step="0.01" placeholder="Prix HT" />
-        <input id="new-unit" placeholder="Unité" />
-        <input id="new-stock" type="number" step="0.01" placeholder="Stock" />
-        <button id="btn-add">Ajouter</button>
-      </div>
-      <p id="inv-msg" style="margin-top:0.5rem; font-size:0.9rem;"></p>
-    </section>
+      <p id="inv-msg"></p>
+    </div>
   </main>
 
   <script>
-    // 🔗 URL de ton Apps Script
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwoUtzG1-DlkSWNvaoDpR6xqH7azD0UkmKbWNo1BTD2fFAQlrwtGUilEjYrqNPikMbFHg/exec'; // ← remplace par ton URL /exec
-    
+    // 🔗 METS ICI L’URL DE TON WEB APP (celle que tu ouvres dans le navigateur)
+    // exemple: const API_URL = 'https://script.google.com/macros/s/AKfycbxxxx/exec';
+    const API_URL = 'https://raymondcorn.github.io/vauban-recettes/inventory.html';
 
-    let allProducts = []; // toutes les lignes récupérées depuis l’API
+    let allProducts = [];
 
     async function loadInventory() {
       const info = document.getElementById('inv-info');
       const table = document.getElementById('inv-table');
       const tbody = table.querySelector('tbody');
       const totalCell = document.getElementById('inv-total');
-      const supplierSelect = document.getElementById('filter-supplier');
 
-      info.style.display = 'block';
       info.textContent = 'Chargement de l’inventaire…';
+      info.style.display = 'block';
       table.style.display = 'none';
       tbody.innerHTML = '';
       totalCell.textContent = '';
@@ -93,8 +175,8 @@
         const res = await fetch(API_URL + '?type=inventory');
         const data = await res.json();
 
-        if (data.error) {
-          info.textContent = 'Erreur : ' + data.error;
+        if (!data || data.error) {
+          info.textContent = 'Erreur : ' + (data && data.error ? data.error : 'réponse invalide');
           return;
         }
 
@@ -105,59 +187,32 @@
           return;
         }
 
-        // remplir la liste des fournisseurs
-        const suppliers = Array.from(
-          new Set(
-            allProducts
-              .map(p => p.supplier || '')
-              .filter(s => s && s.trim() !== '')
-          )
-        ).sort((a, b) => a.localeCompare(b, 'fr'));
-
-        supplierSelect.innerHTML = '<option value="">Tous les fournisseurs</option>';
-        suppliers.forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s;
-          opt.textContent = s;
-          supplierSelect.appendChild(opt);
+        allProducts.forEach(p => {
+          if (!p.row) {
+            console.log('Produit sans row:', p);
+          }
         });
 
         info.style.display = 'none';
         table.style.display = 'table';
 
-        // premier rendu sans filtre
-        renderInventory();
-
+        renderInventory(allProducts, data.totalInventory || 0);
       } catch (e) {
         console.error(e);
         info.textContent = 'Erreur de chargement de l’inventaire.';
       }
     }
 
-    function renderInventory() {
+    function renderInventory(products, totalInventory) {
       const table = document.getElementById('inv-table');
       const tbody = table.querySelector('tbody');
       const totalCell = document.getElementById('inv-total');
-      const supplierSelect = document.getElementById('filter-supplier');
-      const searchInput = document.getElementById('search-product');
-
-      const supplierFilter = supplierSelect.value.trim().toLowerCase();
-      const searchFilter = searchInput.value.trim().toLowerCase();
+      const msgEl = document.getElementById('inv-msg');
 
       tbody.innerHTML = '';
+      msgEl.textContent = '';
 
-      const filtered = allProducts.filter(p => {
-        const supplier = (p.supplier || '').toLowerCase();
-        const name = (p.name || '').toLowerCase();
-
-        if (supplierFilter && supplier !== supplierFilter) return false;
-        if (searchFilter && !name.includes(searchFilter)) return false;
-        return true;
-      });
-
-      let total = 0;
-
-      filtered.forEach(p => {
+      products.forEach(p => {
         const tr = document.createElement('tr');
 
         function td(content, align) {
@@ -167,45 +222,47 @@
           } else {
             cell.textContent = content;
           }
-          cell.style.padding = '4px';
           if (align) cell.style.textAlign = align;
           return cell;
         }
 
-        // champs éditables
         const priceInput = document.createElement('input');
         priceInput.type = 'number';
         priceInput.step = '0.01';
-        priceInput.value = p.priceHt != null ? p.priceHt : '';
-        priceInput.style.width = '80px';
+        priceInput.value = (p.priceHt != null ? p.priceHt : '');
+        priceInput.style.textAlign = 'right';
 
         const unitInput = document.createElement('input');
         unitInput.type = 'text';
         unitInput.value = p.unit || '';
-        unitInput.style.width = '70px';
 
         const stockInput = document.createElement('input');
         stockInput.type = 'number';
         stockInput.step = '0.01';
-        stockInput.value = p.stock != null ? p.stock : '';
-        stockInput.style.width = '70px';
+        stockInput.value = (p.stock != null ? p.stock : '');
+        stockInput.style.textAlign = 'right';
 
-        // boutons action
         const btnSave = document.createElement('button');
         btnSave.textContent = 'Enregistrer';
-        btnSave.onclick = () => saveProduct(p.row, p.name, p.supplier, priceInput.value, unitInput.value, stockInput.value);
+        btnSave.className = 'btn-primary';
+        btnSave.onclick = () => saveProduct(
+          p.row,
+          p.name,
+          p.supplier,
+          priceInput.value,
+          unitInput.value,
+          stockInput.value
+        );
 
         const btnDel = document.createElement('button');
         btnDel.textContent = 'Supprimer';
+        btnDel.className = 'btn-ghost';
         btnDel.style.marginLeft = '4px';
-        btnDel.onclick = () => deleteProduct(p.row, p.name, p.supplier);
+        btnDel.onclick = () => deleteProduct(p.row, p.name);
 
         const actions = document.createElement('div');
         actions.appendChild(btnSave);
         actions.appendChild(btnDel);
-
-        const stockValue = p.stockValue != null && !isNaN(p.stockValue) ? Number(p.stockValue) : 0;
-        total += stockValue;
 
         tr.appendChild(td(p.name, 'left'));
         tr.appendChild(td(p.supplier || '', 'left'));
@@ -213,7 +270,7 @@
         tr.appendChild(td(unitInput, 'left'));
         tr.appendChild(td(stockInput, 'right'));
         tr.appendChild(td(
-          stockValue ? stockValue.toFixed(2) : '',
+          (p.stockValue != null && !isNaN(p.stockValue)) ? Number(p.stockValue).toFixed(2) : '',
           'right'
         ));
         tr.appendChild(td(actions, 'center'));
@@ -221,117 +278,111 @@
         tbody.appendChild(tr);
       });
 
-      totalCell.textContent = total.toFixed(2);
+      totalCell.textContent = Number(totalInventory || 0).toFixed(2);
     }
 
-   async function saveProduct(name, supplier, priceHt, unit, stock) {
-  const msgEl = document.getElementById('inv-msg');
-  msgEl.textContent = 'Enregistrement...';
+    async function saveProduct(row, name, supplier, priceHt, unit, stock) {
+      const msgEl = document.getElementById('inv-msg');
+      msgEl.textContent = 'Enregistrement...';
 
-  const params = new URLSearchParams();
-  params.append('action', 'updateProduct');
-     params.append('row', row);
-  params.append('name', name);
-  params.append('supplier', supplier);
-  if (priceHt !== '') params.append('priceHt', priceHt);
-  if (unit !== '')    params.append('unit', unit);
-  if (stock !== '')   params.append('stock', stock);
+      const params = new URLSearchParams();
+      params.append('action', 'updateProduct');
+      params.append('row', row);
+      params.append('name', name);
+      params.append('supplier', supplier || '');
+      if (priceHt !== '') params.append('priceHt', priceHt);
+      if (unit !== '')    params.append('unit', unit);
+      if (stock !== '')   params.append('stock', stock);
 
-  try {
-    const res = await fetch(API_URL + '?' + params.toString());
-    const data = await res.json();
-    if (data.error) {
-      msgEl.textContent = 'Erreur : ' + data.error;
-    } else {
-      msgEl.textContent = 'Produit mis à jour.';
-      loadInventory();
+      try {
+        const res = await fetch(API_URL + '?' + params.toString());
+        const data = await res.json();
+        msgEl.textContent = 'Réponse API: ' + JSON.stringify(data);
+        if (data.error) {
+          msgEl.textContent += ' | Erreur: ' + data.error;
+        } else {
+          msgEl.textContent += ' | OK produit mis à jour';
+          loadInventory();
+        }
+      } catch (e) {
+        console.error(e);
+        msgEl.textContent = 'Erreur lors de la mise à jour.';
+      }
     }
-  } catch (e) {
-    console.error(e);
-    msgEl.textContent = 'Erreur lors de la mise à jour.';
-  }
-}
 
-    async function deleteProduct(name, supplier) {
-  const msgEl = document.getElementById('inv-msg');
-  if (!confirm('Supprimer ce produit ?')) return;
+    async function deleteProduct(row, name) {
+      const msgEl = document.getElementById('inv-msg');
+      if (!confirm('Supprimer ce produit ?')) return;
 
-  msgEl.textContent = 'Suppression...';
+      msgEl.textContent = 'Suppression...';
 
-  const params = new URLSearchParams();
-  params.append('action', 'deleteProduct');
-    params.append('row', row);  
-  params.append('name', name);
-  params.append('supplier', supplier);
+      const params = new URLSearchParams();
+      params.append('action', 'deleteProduct');
+      params.append('row', row);
+      params.append('name', name);
 
-  try {
-    const res = await fetch(API_URL + '?' + params.toString());
-    const data = await res.json();
-    if (data.error) {
-      msgEl.textContent = 'Erreur : ' + data.error;
-    } else {
-      msgEl.textContent = 'Produit supprimé.';
-      loadInventory();
+      try {
+        const res = await fetch(API_URL + '?' + params.toString());
+        const data = await res.json();
+        msgEl.textContent = 'Réponse API: ' + JSON.stringify(data);
+        if (data.error) {
+          msgEl.textContent += ' | Erreur: ' + data.error;
+        } else {
+          msgEl.textContent += ' | OK produit supprimé';
+          loadInventory();
+        }
+      } catch (e) {
+        console.error(e);
+        msgEl.textContent = 'Erreur lors de la suppression.';
+      }
     }
-  } catch (e) {
-    console.error(e);
-    msgEl.textContent = 'Erreur lors de la suppression.';
-  }
-}
 
     async function addNewProduct() {
-  const msgEl = document.getElementById('inv-msg');
-  const nameEl = document.getElementById('new-name');
-  const supplierEl = document.getElementById('new-supplier');
-  const priceEl = document.getElementById('new-price');
-  const unitEl = document.getElementById('new-unit');
-  const stockEl = document.getElementById('new-stock');
+      const msgEl = document.getElementById('inv-msg');
+      const nameEl = document.getElementById('new-name');
+      const supplierEl = document.getElementById('new-supplier');
+      const priceEl = document.getElementById('new-price');
+      const unitEl = document.getElementById('new-unit');
+      const stockEl = document.getElementById('new-stock');
 
-  if (!nameEl.value.trim()) {
-    msgEl.textContent = 'Le nom du produit est obligatoire.';
-    return;
-  }
+      if (!nameEl.value.trim()) {
+        msgEl.textContent = 'Le nom du produit est obligatoire.';
+        return;
+      }
 
-  msgEl.textContent = 'Ajout du produit...';
+      msgEl.textContent = 'Ajout du produit...';
 
-  const params = new URLSearchParams();
-  params.append('action', 'addProduct');
-  params.append('name', nameEl.value.trim());
-  params.append('supplier', supplierEl.value.trim());
-  if (priceEl.value !== '') params.append('priceHt', priceEl.value);
-  if (unitEl.value !== '')  params.append('unit', unitEl.value);
-  if (stockEl.value !== '') params.append('stock', stockEl.value);
+      const params = new URLSearchParams();
+      params.append('action', 'addProduct');
+      params.append('name', nameEl.value.trim());
+      params.append('supplier', supplierEl.value.trim());
+      if (priceEl.value !== '') params.append('priceHt', priceEl.value);
+      if (unitEl.value !== '')  params.append('unit', unitEl.value);
+      if (stockEl.value !== '') params.append('stock', stockEl.value);
 
-  try {
-    const res = await fetch(API_URL + '?' + params.toString());
-    const data = await res.json();
-    if (data.error) {
-      msgEl.textContent = 'Erreur : ' + data.error;
-    } else {
-      msgEl.textContent = 'Produit ajouté.';
-      nameEl.value = '';
-      supplierEl.value = '';
-      priceEl.value = '';
-      unitEl.value = '';
-      stockEl.value = '';
-      loadInventory();
+      try {
+        const res = await fetch(API_URL + '?' + params.toString());
+        const data = await res.json();
+        msgEl.textContent = 'Réponse API: ' + JSON.stringify(data);
+        if (data.error) {
+          msgEl.textContent += ' | Erreur: ' + data.error;
+        } else {
+          msgEl.textContent += ' | OK produit ajouté';
+          nameEl.value = '';
+          supplierEl.value = '';
+          priceEl.value = '';
+          unitEl.value = '';
+          stockEl.value = '';
+          loadInventory();
+        }
+      } catch (e) {
+        console.error(e);
+        msgEl.textContent = 'Erreur lors de l’ajout.';
+      }
     }
-  } catch (e) {
-    console.error(e);
-    msgEl.textContent = 'Erreur lors de l’ajout.';
-  }
-}
-
 
     document.getElementById('btn-add').addEventListener('click', addNewProduct);
-    document.getElementById('filter-supplier').addEventListener('change', renderInventory);
-    document.getElementById('search-product').addEventListener('input', renderInventory);
-
-    loadInventory();
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').catch(console.error);
-    }
+    document.addEventListener('DOMContentLoaded', loadInventory);
   </script>
 </body>
 </html>
