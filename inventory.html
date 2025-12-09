@@ -72,7 +72,7 @@
   <script>
     // 🔗 URL de ton Apps Script
     const API_URL = 'https://script.google.com/macros/s/AKfycbwoUtzG1-DlkSWNvaoDpR6xqH7azD0UkmKbWNo1BTD2fFAQlrwtGUilEjYrqNPikMbFHg/exec'; // ← remplace par ton URL /exec
-    const TOKEN   = 'RAY2025SECRET';            // ← même valeur que SECRET_TOKEN côté script
+    
 
     let allProducts = []; // toutes les lignes récupérées depuis l’API
 
@@ -229,7 +229,7 @@
       msgEl.textContent = 'Enregistrement...';
 
       const params = new URLSearchParams();
-      params.append('token', TOKEN);
+      
       params.append('action', 'updateProduct');
       params.append('name', name);
       params.append('supplier', supplier);
@@ -262,7 +262,7 @@
       msgEl.textContent = 'Suppression...';
 
       const params = new URLSearchParams();
-      params.append('token', TOKEN);
+      
       params.append('action', 'deleteProduct');
       params.append('name', name);
       params.append('supplier', supplier);
@@ -301,7 +301,7 @@
       msgEl.textContent = 'Ajout du produit...';
 
       const params = new URLSearchParams();
-      params.append('token', TOKEN);
+      
       params.append('action', 'addProduct');
       params.append('name', nameEl.value.trim());
       params.append('supplier', supplierEl.value.trim());
