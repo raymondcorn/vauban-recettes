@@ -1,5 +1,5 @@
-const CACHE_NAME = 'vauban-recettes-v1';
-const BASE = '/vauban-recettes/'; // chemin GitHub Pages : https://toncompte.github.io/vauban-recettes/
+const CACHE_NAME = 'vauban-recettes-v2';
+const BASE = '/vauban-recettes/'; // chemin GitHub Pages : https://raymondcorn.github.io/vauban-recettes/
 
 const ASSETS = [
   BASE,
