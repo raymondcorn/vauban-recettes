@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Inventaire – Le Vauban</title>
+  <title>Inventaire – Le Vauban (DEBUG)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -88,6 +88,9 @@
       color: #e5e7eb;
       white-space: pre-wrap;
       word-break: break-word;
+      border-top: 1px solid #1f2937;
+      padding-top: 4px;
+      margin-top: 8px;
     }
     tfoot th {
       background: #020617;
@@ -116,19 +119,11 @@
       min-width: 90px;
       flex: 1 1 120px;
     }
-    @media (max-width: 600px) {
-      table {
-        font-size: 0.75rem;
-      }
-      th, td {
-        padding: 3px 4px;
-      }
-    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Inventaire produits – Le Vauban</h1>
+    <h1>Inventaire produits – DEBUG</h1>
   </header>
 
   <main>
@@ -176,6 +171,11 @@
 
     let allProducts = [];
 
+    function logMsg(text) {
+      const msgEl = document.getElementById('inv-msg');
+      msgEl.textContent += (msgEl.textContent ? '\n' : '') + text;
+    }
+
     async function loadInventory() {
       const info = document.getElementById('inv-info');
       const table = document.getElementById('inv-table');
@@ -191,8 +191,10 @@
       totalCell.textContent = '';
 
       try {
+        logMsg('DEBUG: appel ' + API_URL + '?type=inventory');
         const res = await fetch(API_URL + '?type=inventory');
         const data = await res.json();
+        logMsg('DEBUG: réponse inventory: ' + JSON.stringify(data));
 
         if (!data || data.error) {
           info.textContent = 'Erreur : ' + (data && data.error ? data.error : 'réponse invalide');
@@ -212,6 +214,7 @@
       } catch (e) {
         console.error(e);
         info.textContent = 'Erreur de chargement de l’inventaire.';
+        logMsg('ERREUR loadInventory: ' + e);
       }
     }
 
@@ -255,20 +258,26 @@
         const btnSave = document.createElement('button');
         btnSave.textContent = 'Enregistrer';
         btnSave.className = 'btn-primary';
-        btnSave.onclick = () => saveProduct(
-          p.row,
-          p.name,
-          p.supplier,
-          priceInput.value,
-          unitInput.value,
-          stockInput.value
-        );
+        btnSave.onclick = () => {
+          alert('CLICK ENREGISTRER: ' + p.name + ' (row ' + p.row + ')');
+          saveProduct(
+            p.row,
+            p.name,
+            p.supplier,
+            priceInput.value,
+            unitInput.value,
+            stockInput.value
+          );
+        };
 
         const btnDel = document.createElement('button');
         btnDel.textContent = 'Supprimer';
         btnDel.className = 'btn-ghost';
         btnDel.style.marginLeft = '4px';
-        btnDel.onclick = () => deleteProduct(p.row, p.name);
+        btnDel.onclick = () => {
+          alert('CLICK SUPPRIMER: ' + p.name + ' (row ' + p.row + ')');
+          deleteProduct(p.row, p.name);
+        };
 
         const actions = document.createElement('div');
         actions.appendChild(btnSave);
@@ -294,6 +303,7 @@
     }
 
     async function saveProduct(row, name, supplier, priceHt, unit, stock) {
+      logMsg('DEBUG: saveProduct row=' + row + ' name=' + name);
       const msgEl = document.getElementById('inv-msg');
       msgEl.textContent = 'Enregistrement...';
 
@@ -306,19 +316,23 @@
       if (unit !== '')    params.append('unit', unit);
       if (stock !== '')   params.append('stock', stock);
 
+      const url = API_URL + '?' + params.toString();
+      logMsg('DEBUG: appel ' + url);
+
       try {
-        const res = await fetch(API_URL + '?' + params.toString()); // GET avec paramètres
+        const res = await fetch(url);
         const data = await res.json();
-        msgEl.textContent = 'Réponse: ' + JSON.stringify(data);
+        logMsg('DEBUG: réponse update: ' + JSON.stringify(data));
         if (data.error) {
-          msgEl.textContent += ' | Erreur: ' + data.error;
+          msgEl.textContent = 'Erreur: ' + data.error;
         } else {
-          msgEl.textContent += ' | OK produit mis à jour';
+          msgEl.textContent = 'OK produit mis à jour';
           loadInventory();
         }
       } catch (e) {
         console.error(e);
         msgEl.textContent = 'Erreur lors de la mise à jour.';
+        logMsg('ERREUR saveProduct: ' + e);
       }
     }
 
@@ -333,19 +347,23 @@
       params.append('row', row);
       params.append('name', name);
 
+      const url = API_URL + '?' + params.toString();
+      logMsg('DEBUG: appel ' + url);
+
       try {
-        const res = await fetch(API_URL + '?' + params.toString());
+        const res = await fetch(url);
         const data = await res.json();
-        msgEl.textContent = 'Réponse: ' + JSON.stringify(data);
+        logMsg('DEBUG: réponse delete: ' + JSON.stringify(data));
         if (data.error) {
-          msgEl.textContent += ' | Erreur: ' + data.error;
+          msgEl.textContent = 'Erreur: ' + data.error;
         } else {
-          msgEl.textContent += ' | OK produit supprimé';
+          msgEl.textContent = 'OK produit supprimé';
           loadInventory();
         }
       } catch (e) {
         console.error(e);
         msgEl.textContent = 'Erreur lors de la suppression.';
+        logMsg('ERREUR deleteProduct: ' + e);
       }
     }
 
@@ -356,6 +374,8 @@
       const priceEl = document.getElementById('new-price');
       const unitEl = document.getElementById('new-unit');
       const stockEl = document.getElementById('new-stock');
+
+      alert('CLICK AJOUTER: ' + nameEl.value);
 
       if (!nameEl.value.trim()) {
         msgEl.textContent = 'Le nom du produit est obligatoire.';
@@ -372,14 +392,17 @@
       if (unitEl.value !== '')  params.append('unit', unitEl.value);
       if (stockEl.value !== '') params.append('stock', stockEl.value);
 
+      const url = API_URL + '?' + params.toString();
+      logMsg('DEBUG: appel ' + url);
+
       try {
-        const res = await fetch(API_URL + '?' + params.toString());
+        const res = await fetch(url);
         const data = await res.json();
-        msgEl.textContent = 'Réponse: ' + JSON.stringify(data);
+        logMsg('DEBUG: réponse add: ' + JSON.stringify(data));
         if (data.error) {
-          msgEl.textContent += ' | Erreur: ' + data.error;
+          msgEl.textContent = 'Erreur: ' + data.error;
         } else {
-          msgEl.textContent += ' | OK produit ajouté';
+          msgEl.textContent = 'OK produit ajouté';
           nameEl.value = '';
           supplierEl.value = '';
           priceEl.value = '';
@@ -390,11 +413,14 @@
       } catch (e) {
         console.error(e);
         msgEl.textContent = 'Erreur lors de l’ajout.';
+        logMsg('ERREUR addNewProduct: ' + e);
       }
     }
 
-    document.getElementById('btn-add').addEventListener('click', addNewProduct);
-    document.addEventListener('DOMContentLoaded', loadInventory);
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('btn-add').addEventListener('click', addNewProduct);
+      loadInventory();
+    });
   </script>
 </body>
 </html>
