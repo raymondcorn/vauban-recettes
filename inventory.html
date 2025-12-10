@@ -261,19 +261,83 @@
         stockInput.value = (p.stock != null ? p.stock : '');
         stockInput.style.textAlign = 'right';
 
-        const btnSave = document.createElement('button');
-        btnSave.textContent = 'Enregistrer';
-        btnSave.className = 'btn-primary';
-        btnSave.onclick = () => {
-          saveProduct(
-            rowNum,
-            p.name,
-            p.supplier,
-            priceInput.value,
-            unitInput.value,
-            stockInput.value
-          );
-        };
+       products.forEach((p, index) => {
+  const tr = document.createElement('tr');
+
+  // 🔢 Calcul du numéro de ligne dans Google Sheets :
+  const rowNum = index + 2; // ligne 2 = premier produit, ligne 3 = deuxième, etc.
+
+  function td(content, align) {
+    const cell = document.createElement('td');
+    if (content instanceof HTMLElement) {
+      cell.appendChild(content);
+    } else {
+      cell.textContent = content;
+    }
+    if (align) cell.style.textAlign = align;
+    return cell;
+  }
+
+  const priceInput = document.createElement('input');
+  priceInput.type = 'number';
+  priceInput.step = '0.01';
+  priceInput.value = (p.priceHt != null ? p.priceHt : '');
+  priceInput.style.textAlign = 'right';
+
+  const unitInput = document.createElement('input');
+  unitInput.type = 'text';
+  unitInput.value = p.unit || '';
+
+  const stockInput = document.createElement('input');
+  stockInput.type = 'number';
+  stockInput.step = '0.01';
+  stockInput.value = (p.stock != null ? p.stock : '');
+  stockInput.style.textAlign = 'right';
+
+  const btnSave = document.createElement('button');
+  btnSave.textContent = 'Enregistrer';
+  btnSave.className = 'btn-primary';
+  btnSave.onclick = () => {
+    alert('CLICK ENREGISTRER: ' + p.name + ' (row ' + rowNum + ')');
+    saveProduct(
+      rowNum,                  // 👈 ICI on envoie rowNum
+      p.name,
+      p.supplier,
+      priceInput.value,
+      unitInput.value,
+      stockInput.value
+    );
+  };
+
+  const btnDel = document.createElement('button');
+  btnDel.textContent = 'Supprimer';
+  btnDel.className = 'btn-ghost';
+  btnDel.style.marginLeft = '4px';
+  btnDel.onclick = () => {
+    alert('CLICK SUPPRIMER: ' + p.name + ' (row ' + rowNum + ')');
+    deleteProduct(rowNum, p.name);
+  };
+
+  const actions = document.createElement('div');
+  actions.appendChild(btnSave);
+  actions.appendChild(btnDel);
+
+  tr.appendChild(td(p.name, 'left'));
+  tr.appendChild(td(p.supplier || '', 'left'));
+  tr.appendChild(td(priceInput, 'right'));
+  tr.appendChild(td(unitInput, 'left'));
+  tr.appendChild(td(stockInput, 'right'));
+  tr.appendChild(td(
+    (p.stockValue != null && !isNaN(p.stockValue))
+      ? Number(p.stockValue).toFixed(2)
+      : '',
+    'right'
+  ));
+  tr.appendChild(td(actions, 'center'));
+
+  tbody.appendChild(tr);
+});
+
 
         const btnDel = document.createElement('button');
         btnDel.textContent = 'Supprimer';
