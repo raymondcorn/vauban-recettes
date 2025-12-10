@@ -9,22 +9,23 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
       padding: 0;
-      background: #111827;
-      color: #f9fafb;
+      background: #0b1120;
+      color: #e5e7eb;
     }
     header {
       padding: 12px 16px;
-      background: #0f172a;
+      background: #020617;
       border-bottom: 1px solid #1f2937;
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     header h1 {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1rem;
+      font-weight: 600;
     }
     main {
       padding: 12px;
@@ -37,10 +38,12 @@
     th, td {
       border-bottom: 1px solid #1f2937;
       padding: 4px 6px;
+      vertical-align: middle;
     }
     th {
-      text-align: left;
       background: #020617;
+      text-align: left;
+      font-weight: 500;
     }
     input[type="text"],
     input[type="number"] {
@@ -53,12 +56,16 @@
       background: #020617;
       color: #e5e7eb;
     }
+    input[type="number"] {
+      text-align: right;
+    }
     button {
       font-size: 0.75rem;
       padding: 4px 6px;
       border-radius: 999px;
       border: none;
       cursor: pointer;
+      white-space: nowrap;
     }
     .btn-primary {
       background: #facc15;
@@ -70,33 +77,44 @@
       border: 1px solid #4b5563;
       color: #e5e7eb;
     }
-    #inv-msg {
-      margin-top: 8px;
-      font-size: 0.8rem;
-      color: #e5e7eb;
-    }
     #inv-info {
-      font-size: 0.85rem;
-      color: #9ca3af;
+      font-size: 0.8rem;
       margin-bottom: 6px;
+      color: #9ca3af;
+    }
+    #inv-msg {
+      font-size: 0.75rem;
+      margin-top: 6px;
+      color: #e5e7eb;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
     tfoot th {
       background: #020617;
       border-top: 1px solid #1f2937;
+    }
+    #inv-total {
+      font-weight: 700;
     }
     .add-row {
       margin-top: 16px;
       padding-top: 8px;
       border-top: 1px solid #1f2937;
     }
-    .add-row input {
-      min-width: 80px;
+    .add-row h2 {
+      margin: 0 0 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
     }
     .add-row-fields {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 6px;
+      align-items: center;
+    }
+    .add-row-fields input {
+      min-width: 90px;
+      flex: 1 1 120px;
     }
     @media (max-width: 600px) {
       table {
@@ -110,7 +128,7 @@
 </head>
 <body>
   <header>
-    <h1>Inventaire produits</h1>
+    <h1>Inventaire produits – Le Vauban</h1>
   </header>
 
   <main>
@@ -139,7 +157,7 @@
     </table>
 
     <div class="add-row">
-      <h2 style="font-size:0.95rem; margin:0 0 6px;">Ajouter un produit</h2>
+      <h2>Ajouter un produit</h2>
       <div class="add-row-fields">
         <input id="new-name" type="text" placeholder="Produit">
         <input id="new-supplier" type="text" placeholder="Fournisseur">
@@ -153,8 +171,7 @@
   </main>
 
   <script>
-    // 🔗 METS ICI L’URL DE TON WEB APP (celle que tu ouvres dans le navigateur)
-    // exemple: const API_URL = 'https://script.google.com/macros/s/AKfycbxxxx/exec';
+    // ⚠️ Remplacer par l’URL EXACTE de ton WebApp Apps Script
     const API_URL = 'https://script.google.com/macros/s/AKfycbwoUtzG1-DlkSWNvaoDpR6xqH7azD0UkmKbWNo1BTD2fFAQlrwtGUilEjYrqNPikMbFHg/exec';
 
     let allProducts = [];
@@ -164,9 +181,11 @@
       const table = document.getElementById('inv-table');
       const tbody = table.querySelector('tbody');
       const totalCell = document.getElementById('inv-total');
+      const msgEl = document.getElementById('inv-msg');
 
-      info.textContent = 'Chargement de l’inventaire…';
+      msgEl.textContent = '';
       info.style.display = 'block';
+      info.textContent = 'Chargement de l’inventaire…';
       table.style.display = 'none';
       tbody.innerHTML = '';
       totalCell.textContent = '';
@@ -187,15 +206,8 @@
           return;
         }
 
-        allProducts.forEach(p => {
-          if (!p.row) {
-            console.log('Produit sans row:', p);
-          }
-        });
-
         info.style.display = 'none';
         table.style.display = 'table';
-
         renderInventory(allProducts, data.totalInventory || 0);
       } catch (e) {
         console.error(e);
@@ -207,10 +219,8 @@
       const table = document.getElementById('inv-table');
       const tbody = table.querySelector('tbody');
       const totalCell = document.getElementById('inv-total');
-      const msgEl = document.getElementById('inv-msg');
 
       tbody.innerHTML = '';
-      msgEl.textContent = '';
 
       products.forEach(p => {
         const tr = document.createElement('tr');
@@ -270,7 +280,9 @@
         tr.appendChild(td(unitInput, 'left'));
         tr.appendChild(td(stockInput, 'right'));
         tr.appendChild(td(
-          (p.stockValue != null && !isNaN(p.stockValue)) ? Number(p.stockValue).toFixed(2) : '',
+          (p.stockValue != null && !isNaN(p.stockValue))
+            ? Number(p.stockValue).toFixed(2)
+            : '',
           'right'
         ));
         tr.appendChild(td(actions, 'center'));
@@ -295,9 +307,9 @@
       if (stock !== '')   params.append('stock', stock);
 
       try {
-        const res = await fetch(API_URL + '?' + params.toString());
+        const res = await fetch(API_URL + '?' + params.toString()); // GET avec paramètres
         const data = await res.json();
-        msgEl.textContent = 'Réponse API: ' + JSON.stringify(data);
+        msgEl.textContent = 'Réponse: ' + JSON.stringify(data);
         if (data.error) {
           msgEl.textContent += ' | Erreur: ' + data.error;
         } else {
@@ -324,7 +336,7 @@
       try {
         const res = await fetch(API_URL + '?' + params.toString());
         const data = await res.json();
-        msgEl.textContent = 'Réponse API: ' + JSON.stringify(data);
+        msgEl.textContent = 'Réponse: ' + JSON.stringify(data);
         if (data.error) {
           msgEl.textContent += ' | Erreur: ' + data.error;
         } else {
@@ -363,7 +375,7 @@
       try {
         const res = await fetch(API_URL + '?' + params.toString());
         const data = await res.json();
-        msgEl.textContent = 'Réponse API: ' + JSON.stringify(data);
+        msgEl.textContent = 'Réponse: ' + JSON.stringify(data);
         if (data.error) {
           msgEl.textContent += ' | Erreur: ' + data.error;
         } else {
