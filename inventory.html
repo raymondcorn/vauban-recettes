@@ -6,467 +6,197 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, sans-serif;
       margin: 0;
-      padding: 0;
       background: #0b1120;
       color: #e5e7eb;
     }
     header {
-      padding: 12px 16px;
+      padding: 12px;
       background: #020617;
       border-bottom: 1px solid #1f2937;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-    main {
-      padding: 12px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.85rem;
     }
     th, td {
       border-bottom: 1px solid #1f2937;
-      padding: 4px 6px;
-      vertical-align: middle;
+      padding: 6px;
     }
     th {
       background: #020617;
-      text-align: left;
-      font-weight: 500;
     }
-    input[type="text"],
-    input[type="number"] {
+    input {
       width: 100%;
-      box-sizing: border-box;
-      font-size: 0.8rem;
-      padding: 2px 4px;
-      border-radius: 4px;
-      border: 1px solid #374151;
-      background: #020617;
+      background: #111827;
       color: #e5e7eb;
-    }
-    input[type="number"] {
-      text-align: right;
+      border: 1px solid #374151;
+      border-radius: 4px;
+      padding: 4px;
     }
     button {
-      font-size: 0.75rem;
       padding: 4px 6px;
-      border-radius: 999px;
       border: none;
+      border-radius: 6px;
       cursor: pointer;
-      white-space: nowrap;
     }
     .btn-primary {
       background: #facc15;
       color: #111827;
-      font-weight: 600;
     }
-    .btn-ghost {
+    .btn-delete {
       background: transparent;
+      color: #e5e7eb;
       border: 1px solid #4b5563;
-      color: #e5e7eb;
-    }
-    #inv-info {
-      font-size: 0.8rem;
-      margin-bottom: 6px;
-      color: #9ca3af;
-    }
-    #inv-msg {
-      font-size: 0.75rem;
-      margin-top: 8px;
-      color: #e5e7eb;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    tfoot th {
-      background: #020617;
-      border-top: 1px solid #1f2937;
-    }
-    #inv-total {
-      font-weight: 700;
-    }
-    .add-row {
-      margin-top: 16px;
-      padding-top: 8px;
-      border-top: 1px solid #1f2937;
-    }
-    .add-row h2 {
-      margin: 0 0 6px;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-    .add-row-fields {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-    }
-    .add-row-fields input {
-      min-width: 90px;
-      flex: 1 1 120px;
-    }
-    @media (max-width: 600px) {
-      table {
-        font-size: 0.75rem;
-      }
-      th, td {
-        padding: 3px 4px;
-      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Inventaire produits – Le Vauban</h1>
-  </header>
+<header>
+  <h1>Inventaire – Le Vauban</h1>
+</header>
 
-  <main>
-    <p id="inv-info">Chargement de l’inventaire…</p>
+<p id="msg"></p>
 
-    <table id="inv-table" style="display:none;">
-      <thead>
-        <tr>
-          <th>Produit</th>
-          <th>Fournisseur</th>
-          <th style="text-align:right;">Prix HT</th>
-          <th>Unité</th>
-          <th style="text-align:right;">Stock</th>
-          <th style="text-align:right;">Valeur stock</th>
-          <th style="text-align:center;">Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <th colspan="5" style="text-align:right;">TOTAL INVENTAIRE (€)</th>
-          <th id="inv-total" style="text-align:right;"></th>
-          <th></th>
-        </tr>
-      </tfoot>
-    </table>
+<table id="table" style="display:none;">
+  <thead>
+    <tr>
+      <th>Produit</th>
+      <th>Fournisseur</th>
+      <th>Prix HT</th>
+      <th>Unité</th>
+      <th>Stock</th>
+      <th>Valeur</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+  <tfoot>
+    <tr>
+      <th colspan="5" style="text-align:right;">TOTAL (€)</th>
+      <th id="total"></th>
+      <th></th>
+    </tr>
+  </tfoot>
+</table>
 
-    <div class="add-row">
-      <h2>Ajouter un produit</h2>
-      <div class="add-row-fields">
-        <input id="new-name" type="text" placeholder="Produit">
-        <input id="new-supplier" type="text" placeholder="Fournisseur">
-        <input id="new-price" type="number" step="0.01" placeholder="Prix HT">
-        <input id="new-unit" type="text" placeholder="Unité">
-        <input id="new-stock" type="number" step="0.01" placeholder="Stock">
-        <button id="btn-add" class="btn-primary">Ajouter</button>
-      </div>
-      <p id="inv-msg"></p>
-    </div>
-  </main>
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwoUtzG1-DlkSWNvaoDpR6xqH7azD0UkmKbWNo1BTD2fFAQlrwtGUilEjYrqNPikMbFHg/exec";
 
-  <script>
-    // ⚠️  METS ICI l’URL EXACTE de ton WebApp
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwoUtzG1-DlkSWNvaoDpR6xqH7azD0UkmKbWNo1BTD2fFAQlrwtGUilEjYrqNPikMbFHg/exec';
+function setMsg(t) {
+  document.getElementById("msg").textContent = t;
+}
 
-    let allProducts = [];
+async function loadInventory() {
+  setMsg("Chargement…");
+  const res = await fetch(API_URL + "?type=inventory");
+  const data = await res.json();
 
-    function setMessage(text) {
-      document.getElementById('inv-msg').textContent = text || '';
-    }
-
-    async function loadInventory() {
-      const info = document.getElementById('inv-info');
-      const table = document.getElementById('inv-table');
-      const tbody = table.querySelector('tbody');
-      const totalCell = document.getElementById('inv-total');
-
-      setMessage('');
-      info.style.display = 'block';
-      info.textContent = 'Chargement de l’inventaire…';
-      table.style.display = 'none';
-      tbody.innerHTML = '';
-      totalCell.textContent = '';
-
-      try {
-        const res = await fetch(API_URL + '?type=inventory');
-        const data = await res.json();
-
-        if (!data || data.error) {
-          info.textContent = 'Erreur : ' + (data && data.error ? data.error : 'réponse invalide');
-          return;
-        }
-
-        allProducts = data.products || [];
-
-        if (!allProducts.length) {
-          info.textContent = 'Aucun produit trouvé.';
-          return;
-        }
-
-        info.style.display = 'none';
-        table.style.display = 'table';
-        renderInventory(allProducts, data.totalInventory || 0);
-      } catch (e) {
-        console.error(e);
-        info.textContent = 'Erreur de chargement de l’inventaire.';
-        setMessage('Erreur de chargement : ' + e);
-      }
-    }
-
-    function renderInventory(products, totalInventory) {
-      const table = document.getElementById('inv-table');
-      const tbody = table.querySelector('tbody');
-      const totalCell = document.getElementById('inv-total');
-
-      tbody.innerHTML = '';
-
-      products.forEach((p, index) => {
-        const tr = document.createElement('tr');
-
-        // 🔢 Calcul du numéro de ligne dans Google Sheets
-        const rowNum = (p.row !== undefined && p.row !== null && p.row !== '')
-          ? p.row
-          : (index + 2); // données commencent à la ligne 2
-
-        function td(content, align) {
-          const cell = document.createElement('td');
-          if (content instanceof HTMLElement) {
-            cell.appendChild(content);
-          } else {
-            cell.textContent = content;
-          }
-          if (align) cell.style.textAlign = align;
-          return cell;
-        }
-
-        const priceInput = document.createElement('input');
-        priceInput.type = 'number';
-        priceInput.step = '0.01';
-        priceInput.value = (p.priceHt != null ? p.priceHt : '');
-        priceInput.style.textAlign = 'right';
-
-        const unitInput = document.createElement('input');
-        unitInput.type = 'text';
-        unitInput.value = p.unit || '';
-
-        const stockInput = document.createElement('input');
-        stockInput.type = 'number';
-        stockInput.step = '0.01';
-        stockInput.value = (p.stock != null ? p.stock : '');
-        stockInput.style.textAlign = 'right';
-
-       products.forEach((p, index) => {
-  const tr = document.createElement('tr');
-
-  // 🔢 Calcul du numéro de ligne dans Google Sheets :
-  const rowNum = index + 2; // ligne 2 = premier produit, ligne 3 = deuxième, etc.
-
-  function td(content, align) {
-    const cell = document.createElement('td');
-    if (content instanceof HTMLElement) {
-      cell.appendChild(content);
-    } else {
-      cell.textContent = content;
-    }
-    if (align) cell.style.textAlign = align;
-    return cell;
+  if (!data || !data.products) {
+    setMsg("Erreur de chargement inventaire");
+    return;
   }
 
-  const priceInput = document.createElement('input');
-  priceInput.type = 'number';
-  priceInput.step = '0.01';
-  priceInput.value = (p.priceHt != null ? p.priceHt : '');
-  priceInput.style.textAlign = 'right';
+  const tbody = document.querySelector("#table tbody");
+  tbody.innerHTML = "";
+  document.getElementById("total").textContent = data.totalInventory.toFixed(2);
+  document.getElementById("table").style.display = "table";
 
-  const unitInput = document.createElement('input');
-  unitInput.type = 'text';
-  unitInput.value = p.unit || '';
+  data.products.forEach((p, index) => {
+    const rowNum = index + 2; // Ligne réelle dans Sheets
 
-  const stockInput = document.createElement('input');
-  stockInput.type = 'number';
-  stockInput.step = '0.01';
-  stockInput.value = (p.stock != null ? p.stock : '');
-  stockInput.style.textAlign = 'right';
+    const tr = document.createElement("tr");
 
-  const btnSave = document.createElement('button');
-  btnSave.textContent = 'Enregistrer';
-  btnSave.className = 'btn-primary';
-  btnSave.onclick = () => {
-    alert('CLICK ENREGISTRER: ' + p.name + ' (row ' + rowNum + ')');
-    saveProduct(
-      rowNum,                  // 👈 ICI on envoie rowNum
-      p.name,
-      p.supplier,
-      priceInput.value,
-      unitInput.value,
-      stockInput.value
-    );
-  };
-
-  const btnDel = document.createElement('button');
-  btnDel.textContent = 'Supprimer';
-  btnDel.className = 'btn-ghost';
-  btnDel.style.marginLeft = '4px';
-  btnDel.onclick = () => {
-    alert('CLICK SUPPRIMER: ' + p.name + ' (row ' + rowNum + ')');
-    deleteProduct(rowNum, p.name);
-  };
-
-  const actions = document.createElement('div');
-  actions.appendChild(btnSave);
-  actions.appendChild(btnDel);
-
-  tr.appendChild(td(p.name, 'left'));
-  tr.appendChild(td(p.supplier || '', 'left'));
-  tr.appendChild(td(priceInput, 'right'));
-  tr.appendChild(td(unitInput, 'left'));
-  tr.appendChild(td(stockInput, 'right'));
-  tr.appendChild(td(
-    (p.stockValue != null && !isNaN(p.stockValue))
-      ? Number(p.stockValue).toFixed(2)
-      : '',
-    'right'
-  ));
-  tr.appendChild(td(actions, 'center'));
-
-  tbody.appendChild(tr);
-});
-
-
-        const btnDel = document.createElement('button');
-        btnDel.textContent = 'Supprimer';
-        btnDel.className = 'btn-ghost';
-        btnDel.style.marginLeft = '4px';
-        btnDel.onclick = () => {
-          if (confirm('Supprimer ce produit ?')) {
-            deleteProduct(rowNum, p.name);
-          }
-        };
-
-        const actions = document.createElement('div');
-        actions.appendChild(btnSave);
-        actions.appendChild(btnDel);
-
-        const stockValue = (p.stockValue != null && !isNaN(p.stockValue))
-          ? Number(p.stockValue).toFixed(2)
-          : ((p.priceHt && p.stock) ? (Number(p.priceHt) * Number(p.stock)).toFixed(2) : '');
-
-        tr.appendChild(td(p.name, 'left'));
-        tr.appendChild(td(p.supplier || '', 'left'));
-        tr.appendChild(td(priceInput, 'right'));
-        tr.appendChild(td(unitInput, 'left'));
-        tr.appendChild(td(stockInput, 'right'));
-        tr.appendChild(td(stockValue, 'right'));
-        tr.appendChild(td(actions, 'center'));
-
-        tbody.appendChild(tr);
-      });
-
-      totalCell.textContent = Number(totalInventory || 0).toFixed(2);
+    function field(val, type="text") {
+      const inp = document.createElement("input");
+      inp.type = type;
+      inp.value = val ?? "";
+      return inp;
     }
 
-    async function saveProduct(row, name, supplier, priceHt, unit, stock) {
-      setMessage('Enregistrement...');
+    const priceInput = field(p.priceHt, "number");
+    const unitInput = field(p.unit);
+    const stockInput = field(p.stock, "number");
 
-      const params = new URLSearchParams();
-      params.append('action', 'updateProduct');
-      params.append('row', row);
-      params.append('name', name);
-      params.append('supplier', supplier || '');
-      if (priceHt !== '') params.append('priceHt', priceHt);
-      if (unit !== '')    params.append('unit', unit);
-      if (stock !== '')   params.append('stock', stock);
+    const btnSave = document.createElement("button");
+    btnSave.textContent = "Enregistrer";
+    btnSave.className = "btn-primary";
+    btnSave.onclick = () => saveProduct(rowNum, p.name, p.supplier, priceInput.value, unitInput.value, stockInput.value);
 
-      try {
-        const res = await fetch(API_URL + '?' + params.toString());
-        const data = await res.json();
-        if (data.error) {
-          setMessage('Erreur : ' + data.error);
-        } else {
-          setMessage('Produit mis à jour');
-          loadInventory();
-        }
-      } catch (e) {
-        console.error(e);
-        setMessage('Erreur lors de la mise à jour : ' + e);
-      }
-    }
+    const btnDel = document.createElement("button");
+    btnDel.textContent = "Supprimer";
+    btnDel.className = "btn-delete";
+    btnDel.onclick = () => deleteProduct(rowNum);
 
-    async function deleteProduct(row, name) {
-      setMessage('Suppression...');
+    tr.innerHTML = `
+      <td>${p.name}</td>
+      <td>${p.supplier}</td>
+    `;
 
-      const params = new URLSearchParams();
-      params.append('action', 'deleteProduct');
-      params.append('row', row);
-      params.append('name', name);
+    tr.appendChild(td(priceInput));
+    tr.appendChild(td(unitInput));
+    tr.appendChild(td(stockInput));
 
-      try {
-        const res = await fetch(API_URL + '?' + params.toString());
-        const data = await res.json();
-        if (data.error) {
-          setMessage('Erreur : ' + data.error);
-        } else {
-          setMessage('Produit supprimé');
-          loadInventory();
-        }
-      } catch (e) {
-        console.error(e);
-        setMessage('Erreur lors de la suppression : ' + e);
-      }
-    }
+    const val = (p.priceHt * p.stock).toFixed(2);
+    tr.appendChild(td(val));
 
-    async function addNewProduct() {
-      const nameEl = document.getElementById('new-name');
-      const supplierEl = document.getElementById('new-supplier');
-      const priceEl = document.getElementById('new-price');
-      const unitEl = document.getElementById('new-unit');
-      const stockEl = document.getElementById('new-stock');
+    const actionTd = document.createElement("td");
+    actionTd.appendChild(btnSave);
+    actionTd.appendChild(btnDel);
+    tr.appendChild(actionTd);
 
-      if (!nameEl.value.trim()) {
-        setMessage('Le nom du produit est obligatoire.');
-        return;
-      }
+    tbody.appendChild(tr);
+  });
 
-      setMessage('Ajout du produit...');
+  setMsg("");
+}
 
-      const params = new URLSearchParams();
-      params.append('action', 'addProduct');
-      params.append('name', nameEl.value.trim());
-      params.append('supplier', supplierEl.value.trim());
-      if (priceEl.value !== '') params.append('priceHt', priceEl.value);
-      if (unitEl.value !== '')  params.append('unit', unitEl.value);
-      if (stockEl.value !== '') params.append('stock', stockEl.value);
+function td(content) {
+  const cell = document.createElement("td");
+  if (content instanceof HTMLElement) cell.appendChild(content);
+  else cell.textContent = content;
+  return cell;
+}
 
-      try {
-        const res = await fetch(API_URL + '?' + params.toString());
-        const data = await res.json();
-        if (data.error) {
-          setMessage('Erreur : ' + data.error);
-        } else {
-          setMessage('Produit ajouté');
-          nameEl.value = '';
-          supplierEl.value = '';
-          priceEl.value = '';
-          unitEl.value = '';
-          stockEl.value = '';
-          loadInventory();
-        }
-      } catch (e) {
-        console.error(e);
-        setMessage('Erreur lors de l’ajout : ' + e);
-      }
-    }
+async function saveProduct(row, name, supplier, price, unit, stock) {
+  setMsg("Enregistrement…");
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('btn-add').addEventListener('click', addNewProduct);
-      loadInventory();
-    });
-  </script>
+  const url = API_URL + "?" + new URLSearchParams({
+    action: "updateProduct",
+    row,
+    name,
+    supplier,
+    priceHt: price,
+    unit,
+    stock
+  });
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (data.ok) {
+    setMsg("Produit mis à jour ✔️");
+    loadInventory();
+  } else {
+    setMsg("Erreur update : " + data.error);
+  }
+}
+
+async function deleteProduct(row) {
+  if (!confirm("Supprimer ?")) return;
+
+  const url = API_URL + "?" + new URLSearchParams({
+    action: "deleteProduct",
+    row
+  });
+
+  const res = await fetch(url);
+  loadInventory();
+}
+
+loadInventory();
+</script>
+
 </body>
 </html>
