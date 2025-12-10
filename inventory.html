@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Inventaire – Le Vauban (DEBUG)</title>
+  <title>Inventaire – Le Vauban</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -84,13 +84,10 @@
     }
     #inv-msg {
       font-size: 0.75rem;
-      margin-top: 6px;
+      margin-top: 8px;
       color: #e5e7eb;
       white-space: pre-wrap;
       word-break: break-word;
-      border-top: 1px solid #1f2937;
-      padding-top: 4px;
-      margin-top: 8px;
     }
     tfoot th {
       background: #020617;
@@ -119,11 +116,19 @@
       min-width: 90px;
       flex: 1 1 120px;
     }
+    @media (max-width: 600px) {
+      table {
+        font-size: 0.75rem;
+      }
+      th, td {
+        padding: 3px 4px;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Inventaire produits – DEBUG</h1>
+    <h1>Inventaire produits – Le Vauban</h1>
   </header>
 
   <main>
@@ -166,14 +171,13 @@
   </main>
 
   <script>
-    // ⚠️ Remplacer par l’URL EXACTE de ton WebApp Apps Script
+    // ⚠️  METS ICI l’URL EXACTE de ton WebApp
     const API_URL = 'https://script.google.com/macros/s/AKfycbwoUtzG1-DlkSWNvaoDpR6xqH7azD0UkmKbWNo1BTD2fFAQlrwtGUilEjYrqNPikMbFHg/exec';
 
     let allProducts = [];
 
-    function logMsg(text) {
-      const msgEl = document.getElementById('inv-msg');
-      msgEl.textContent += (msgEl.textContent ? '\n' : '') + text;
+    function setMessage(text) {
+      document.getElementById('inv-msg').textContent = text || '';
     }
 
     async function loadInventory() {
@@ -181,9 +185,8 @@
       const table = document.getElementById('inv-table');
       const tbody = table.querySelector('tbody');
       const totalCell = document.getElementById('inv-total');
-      const msgEl = document.getElementById('inv-msg');
 
-      msgEl.textContent = '';
+      setMessage('');
       info.style.display = 'block';
       info.textContent = 'Chargement de l’inventaire…';
       table.style.display = 'none';
@@ -191,10 +194,8 @@
       totalCell.textContent = '';
 
       try {
-        logMsg('DEBUG: appel ' + API_URL + '?type=inventory');
         const res = await fetch(API_URL + '?type=inventory');
         const data = await res.json();
-        logMsg('DEBUG: réponse inventory: ' + JSON.stringify(data));
 
         if (!data || data.error) {
           info.textContent = 'Erreur : ' + (data && data.error ? data.error : 'réponse invalide');
@@ -214,7 +215,7 @@
       } catch (e) {
         console.error(e);
         info.textContent = 'Erreur de chargement de l’inventaire.';
-        logMsg('ERREUR loadInventory: ' + e);
+        setMessage('Erreur de chargement : ' + e);
       }
     }
 
@@ -225,8 +226,13 @@
 
       tbody.innerHTML = '';
 
-      products.forEach(p => {
+      products.forEach((p, index) => {
         const tr = document.createElement('tr');
+
+        // 🔢 Calcul du numéro de ligne dans Google Sheets
+        const rowNum = (p.row !== undefined && p.row !== null && p.row !== '')
+          ? p.row
+          : (index + 2); // données commencent à la ligne 2
 
         function td(content, align) {
           const cell = document.createElement('td');
@@ -259,9 +265,8 @@
         btnSave.textContent = 'Enregistrer';
         btnSave.className = 'btn-primary';
         btnSave.onclick = () => {
-          alert('CLICK ENREGISTRER: ' + p.name + ' (row ' + p.row + ')');
           saveProduct(
-            p.row,
+            rowNum,
             p.name,
             p.supplier,
             priceInput.value,
@@ -275,25 +280,25 @@
         btnDel.className = 'btn-ghost';
         btnDel.style.marginLeft = '4px';
         btnDel.onclick = () => {
-          alert('CLICK SUPPRIMER: ' + p.name + ' (row ' + p.row + ')');
-          deleteProduct(p.row, p.name);
+          if (confirm('Supprimer ce produit ?')) {
+            deleteProduct(rowNum, p.name);
+          }
         };
 
         const actions = document.createElement('div');
         actions.appendChild(btnSave);
         actions.appendChild(btnDel);
 
+        const stockValue = (p.stockValue != null && !isNaN(p.stockValue))
+          ? Number(p.stockValue).toFixed(2)
+          : ((p.priceHt && p.stock) ? (Number(p.priceHt) * Number(p.stock)).toFixed(2) : '');
+
         tr.appendChild(td(p.name, 'left'));
         tr.appendChild(td(p.supplier || '', 'left'));
         tr.appendChild(td(priceInput, 'right'));
         tr.appendChild(td(unitInput, 'left'));
         tr.appendChild(td(stockInput, 'right'));
-        tr.appendChild(td(
-          (p.stockValue != null && !isNaN(p.stockValue))
-            ? Number(p.stockValue).toFixed(2)
-            : '',
-          'right'
-        ));
+        tr.appendChild(td(stockValue, 'right'));
         tr.appendChild(td(actions, 'center'));
 
         tbody.appendChild(tr);
@@ -303,9 +308,7 @@
     }
 
     async function saveProduct(row, name, supplier, priceHt, unit, stock) {
-      logMsg('DEBUG: saveProduct row=' + row + ' name=' + name);
-      const msgEl = document.getElementById('inv-msg');
-      msgEl.textContent = 'Enregistrement...';
+      setMessage('Enregistrement...');
 
       const params = new URLSearchParams();
       params.append('action', 'updateProduct');
@@ -316,73 +319,57 @@
       if (unit !== '')    params.append('unit', unit);
       if (stock !== '')   params.append('stock', stock);
 
-      const url = API_URL + '?' + params.toString();
-      logMsg('DEBUG: appel ' + url);
-
       try {
-        const res = await fetch(url);
+        const res = await fetch(API_URL + '?' + params.toString());
         const data = await res.json();
-        logMsg('DEBUG: réponse update: ' + JSON.stringify(data));
         if (data.error) {
-          msgEl.textContent = 'Erreur: ' + data.error;
+          setMessage('Erreur : ' + data.error);
         } else {
-          msgEl.textContent = 'OK produit mis à jour';
+          setMessage('Produit mis à jour');
           loadInventory();
         }
       } catch (e) {
         console.error(e);
-        msgEl.textContent = 'Erreur lors de la mise à jour.';
-        logMsg('ERREUR saveProduct: ' + e);
+        setMessage('Erreur lors de la mise à jour : ' + e);
       }
     }
 
     async function deleteProduct(row, name) {
-      const msgEl = document.getElementById('inv-msg');
-      if (!confirm('Supprimer ce produit ?')) return;
-
-      msgEl.textContent = 'Suppression...';
+      setMessage('Suppression...');
 
       const params = new URLSearchParams();
       params.append('action', 'deleteProduct');
       params.append('row', row);
       params.append('name', name);
 
-      const url = API_URL + '?' + params.toString();
-      logMsg('DEBUG: appel ' + url);
-
       try {
-        const res = await fetch(url);
+        const res = await fetch(API_URL + '?' + params.toString());
         const data = await res.json();
-        logMsg('DEBUG: réponse delete: ' + JSON.stringify(data));
         if (data.error) {
-          msgEl.textContent = 'Erreur: ' + data.error;
+          setMessage('Erreur : ' + data.error);
         } else {
-          msgEl.textContent = 'OK produit supprimé';
+          setMessage('Produit supprimé');
           loadInventory();
         }
       } catch (e) {
         console.error(e);
-        msgEl.textContent = 'Erreur lors de la suppression.';
-        logMsg('ERREUR deleteProduct: ' + e);
+        setMessage('Erreur lors de la suppression : ' + e);
       }
     }
 
     async function addNewProduct() {
-      const msgEl = document.getElementById('inv-msg');
       const nameEl = document.getElementById('new-name');
       const supplierEl = document.getElementById('new-supplier');
       const priceEl = document.getElementById('new-price');
       const unitEl = document.getElementById('new-unit');
       const stockEl = document.getElementById('new-stock');
 
-      alert('CLICK AJOUTER: ' + nameEl.value);
-
       if (!nameEl.value.trim()) {
-        msgEl.textContent = 'Le nom du produit est obligatoire.';
+        setMessage('Le nom du produit est obligatoire.');
         return;
       }
 
-      msgEl.textContent = 'Ajout du produit...';
+      setMessage('Ajout du produit...');
 
       const params = new URLSearchParams();
       params.append('action', 'addProduct');
@@ -392,17 +379,13 @@
       if (unitEl.value !== '')  params.append('unit', unitEl.value);
       if (stockEl.value !== '') params.append('stock', stockEl.value);
 
-      const url = API_URL + '?' + params.toString();
-      logMsg('DEBUG: appel ' + url);
-
       try {
-        const res = await fetch(url);
+        const res = await fetch(API_URL + '?' + params.toString());
         const data = await res.json();
-        logMsg('DEBUG: réponse add: ' + JSON.stringify(data));
         if (data.error) {
-          msgEl.textContent = 'Erreur: ' + data.error;
+          setMessage('Erreur : ' + data.error);
         } else {
-          msgEl.textContent = 'OK produit ajouté';
+          setMessage('Produit ajouté');
           nameEl.value = '';
           supplierEl.value = '';
           priceEl.value = '';
@@ -412,8 +395,7 @@
         }
       } catch (e) {
         console.error(e);
-        msgEl.textContent = 'Erreur lors de l’ajout.';
-        logMsg('ERREUR addNewProduct: ' + e);
+        setMessage('Erreur lors de l’ajout : ' + e);
       }
     }
 
